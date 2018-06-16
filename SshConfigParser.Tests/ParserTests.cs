@@ -196,7 +196,7 @@ namespace SshConfigParser.Tests
             result["HostName"].ShouldEqual("example1.com");
             result["User"].ShouldEqual("simon");
             result["Port"].ShouldEqual("1000");
-            ((List<object>) result["IdentityFile"])[0].ShouldEqual("/path/to/key");
+            result["IdentityFile"].ShouldEqual("/path/to/key");
         }
 
 
