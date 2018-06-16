@@ -47,7 +47,9 @@ namespace SshConfigParser
 
                 if (line.Param == "Host")
                 {
-                    if (glob(line.Value, host))
+                    //todo glob support
+                    //if (glob(line.Value, host))
+                    if(line.Value == host)
                     {
                         SetProperty(line.Param, line.Value);
 
@@ -359,7 +361,7 @@ namespace SshConfigParser
                 node.Before = before;
                 node.After = after;
 
-                if (RE_QUOTED.IsMatch(node.Value))
+                if (node.Value != null && RE_QUOTED.IsMatch(node.Value))
                 {
                     node.Value = RE_QUOTED.Replace(node.Value, "$2");
                     node.Quoted = true;

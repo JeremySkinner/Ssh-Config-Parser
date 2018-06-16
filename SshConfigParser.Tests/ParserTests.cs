@@ -152,7 +152,7 @@ namespace SshConfigParser.Tests
 
 
         [Fact]
-        public void Gets_result_by_host()
+        public void Gets_result_by_host_with_globbing()
         {
             var config = SshConfig.ParseFile("config");
             var opts = config.Find("tahoe2");
