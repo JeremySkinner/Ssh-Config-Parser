@@ -2,11 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using static SshConfigParser.Globber;
 
 namespace SshConfigParser
 {
@@ -17,24 +19,15 @@ namespace SshConfigParser
         private static readonly Regex RE_SECTION_DIRECTIVE = new Regex("^(Host|Match)$", RegexOptions.IgnoreCase);
         private static readonly Regex RE_QUOTED = new Regex("^(\")(.*)\\1$");
 
-        public IDictionary<string, object> Find(string host)
+        public SshHost Find(string host)
         {
-            var results = new Dictionary<string, object>();
-
-            void SetProperty(string name, object value)
+            var result = new SshHost();
+            
+            void SetProperty(string name, string value)
             {
-                if (name == "IdentityFile")
+                if (!result.Properties.ContainsKey(name))
                 {
-                    if (!results.ContainsKey(name))
-                    {
-                        results[name] = new List<object>();
-                    }
-
-                    ((List<object>) results[name]).Add(value);
-                }
-                else if (!results.ContainsKey(name))
-                {
-                    results[name] = value;
+                    result.Properties[name] = value;
                 }
             }
 
@@ -47,7 +40,7 @@ namespace SshConfigParser
 
                 if (line.Param == "Host")
                 {
-                    if (Globber.Glob(line.Value, host))
+                    if (Glob(line.Value, host))
                     {
                         SetProperty(line.Param, line.Value);
 
@@ -66,7 +59,7 @@ namespace SshConfigParser
                 }
             }
 
-            return results;
+            return result;
         }
 
         /// <summary>
@@ -99,6 +92,11 @@ namespace SshConfigParser
         }
 
 
+        public void Add(SshHost host)
+        {
+            Add(host.Properties);
+        }
+        
         /// <summary>
         /// Append new section to existing ssh config
         /// </summary>

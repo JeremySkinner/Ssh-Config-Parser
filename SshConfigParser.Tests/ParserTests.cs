@@ -156,8 +156,12 @@ namespace SshConfigParser.Tests
         {
             var config = SshConfig.ParseFile("config");
             var opts = config.Find("tahoe2");
+          
             opts["User"].ShouldEqual("nil");
-            ((List<object>) opts["IdentityFile"])[0].ShouldEqual("~/.ssh/id_rsa");
+            opts.User.ShouldEqual("nil");
+          
+            opts.IdentityFile.ShouldEqual("~/.ssh/id_rsa");
+//            ((List<object>) opts["IdentityFile"])[0].ShouldEqual("~/.ssh/id_rsa");
 
             // the first obtained parameter value will be used. So there's no way to
             // override parameter values.
@@ -169,12 +173,17 @@ namespace SshConfigParser.Tests
             opts["ControlMaster"].ShouldEqual("auto");
             opts["ControlPath"].ShouldEqual("~/.ssh/master-%r@%h:%p");
             opts["Host"].ShouldEqual("tahoe1");
+            opts.Host.ShouldEqual("tahoe1");
             opts["HostName"].ShouldEqual("tahoe1.com");
+            opts.HostName.ShouldEqual("tahoe1");
             ((List<object>) opts["IdentityFile"])[0].ShouldEqual("~/.ssh/id_rsa");
+            opts.IdentityFile.ShouldEqual("~/.ssh/id_rsa");
             opts["ProxyCommand"].ShouldEqual("ssh -q gateway -W %h:%p");
             opts["ServerAliveInterval"].ShouldEqual("80");
             opts["User"].ShouldEqual("nil");
+            opts.User.ShouldEqual("nil");
             opts["ForwardAgent"].ShouldEqual("true");
+            opts.ForwardAgent.ShouldEqual("true");
         }
 
 

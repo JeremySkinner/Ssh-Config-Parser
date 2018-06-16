@@ -7,7 +7,7 @@ namespace SshConfigParser
     {
         static readonly Regex _patternSplitter =  new Regex("[,\\s]+");
         
-        static bool Match(string pattern, string str)
+        private static bool Match(string pattern, string str)
         {
             pattern = pattern.Replace(".", "\\.")
                 .Replace("*", ".*")
