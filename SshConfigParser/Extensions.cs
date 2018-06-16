@@ -13,10 +13,5 @@ namespace SshConfigParser
                 action(element);
             }
         }
-
-        public static string RegexReplace(this string input, string pattern, string replacement)
-        {
-            return new Regex(pattern).Replace(input, replacement);
-        }
     }
 }

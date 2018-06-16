@@ -172,7 +172,7 @@ namespace SshConfigParser.Tests
             opts["HostName"].ShouldEqual("tahoe1.com");
             ((List<object>) opts["IdentityFile"])[0].ShouldEqual("~/.ssh/id_rsa");
             opts["ProxyCommand"].ShouldEqual("ssh -q gateway -W %h:%p");
-            opts["ServerAliveInterval"].ShouldEqual(80);
+            opts["ServerAliveInterval"].ShouldEqual("80");
             opts["User"].ShouldEqual("nil");
             opts["ForwardAgent"].ShouldEqual("true");
         }

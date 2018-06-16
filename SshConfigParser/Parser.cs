@@ -47,9 +47,7 @@ namespace SshConfigParser
 
                 if (line.Param == "Host")
                 {
-                    //todo glob support
-                    //if (glob(line.Value, host))
-                    if(line.Value == host)
+                    if (Globber.Glob(line.Value, host))
                     {
                         SetProperty(line.Param, line.Value);
 
