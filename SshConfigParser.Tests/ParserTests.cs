@@ -175,7 +175,7 @@ namespace SshConfigParser.Tests
             opts["Host"].ShouldEqual("tahoe1");
             opts.Host.ShouldEqual("tahoe1");
             opts["HostName"].ShouldEqual("tahoe1.com");
-            opts.HostName.ShouldEqual("tahoe1");
+            opts.HostName.ShouldEqual("tahoe1.com");
             opts["IdentityFile"].ShouldEqual("~/.ssh/id_rsa");
             opts.IdentityFile.ShouldEqual("~/.ssh/id_rsa");
             opts["ProxyCommand"].ShouldEqual("ssh -q gateway -W %h:%p");
