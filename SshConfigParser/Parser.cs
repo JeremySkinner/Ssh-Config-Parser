@@ -12,6 +12,8 @@ using static SshConfigParser.Globber;
 
 namespace SshConfigParser
 {
+    // Based on code from https://github.com/dotnil/ssh-config
+
     public class SshConfig : List<ConfigNode>
     {
         private static readonly Regex RE_SPACE = new Regex("\\s");

@@ -6,6 +6,7 @@ using Xunit;
 
 namespace SshConfigParser.Tests
 {
+    // Tests ported from https://github.com/dotnil/ssh-config
     public class ParserTests
     {
         [Fact]

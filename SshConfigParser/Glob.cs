@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace SshConfigParser
 {
+    // Based on code from https://github.com/dotnil/ssh-config
     public static class Globber
     {
         static readonly Regex _patternSplitter =  new Regex("[,\\s]+");
