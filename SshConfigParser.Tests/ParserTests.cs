@@ -340,5 +340,13 @@ namespace SshConfigParser.Tests
             c1.Separator.ShouldEqual(" ");
             c1.Value.ShouldEqual("paul");
         }
+
+        [Fact]
+        public void Adds_host_with_alias()
+        {
+            //todo
+            Assert.True(false);
+        }
     }
+    
 }
