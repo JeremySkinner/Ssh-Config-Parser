@@ -344,6 +344,9 @@ namespace SshConfigParser.Tests
         [Fact]
         public void Adds_host_with_alias()
         {
+            // If a host and hostname are both specified, treat the host as the alias
+            // and indent everything else. 
+            
             //todo
             Assert.True(false);
         }

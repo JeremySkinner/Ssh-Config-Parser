@@ -84,5 +84,10 @@ namespace SshConfigParser
             }
             set { Properties[key] = value; }
         }
+
+        /// <summary>
+        /// Keys of all items in the SSH host.
+        /// </summary>
+        public IEnumerable<string> Keys => Properties.Keys;
     }
 }
