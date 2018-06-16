@@ -17,20 +17,72 @@ namespace SshConfigParser
         private static readonly Regex RE_SECTION_DIRECTIVE = new Regex("^(Host|Match)$", RegexOptions.IgnoreCase);
         private static readonly Regex RE_QUOTED = new Regex("^(\")(.*)\\1$");
 
+        public IDictionary<string, object> Find(string host)
+        {
+            var results = new Dictionary<string, object>();
+
+            void SetProperty(string name, object value)
+            {
+                if (name == "IdentityFile")
+                {
+                    if (!results.ContainsKey(name))
+                    {
+                        results[name] = new List<object>();
+                    }
+
+                    ((List<object>) results[name]).Add(value);
+                }
+                else if (!results.ContainsKey(name))
+                {
+                    results[name] = value;
+                }
+            }
+
+            foreach (var line in this)
+            {
+                if (line.Type != NodeType.Directive)
+                {
+                    continue;
+                }
+
+                if (line.Param == "Host")
+                {
+                    if (glob(line.Value, host))
+                    {
+                        SetProperty(line.Param, line.Value);
+
+                        line.Config
+                            .Where(n => n.Type == NodeType.Directive)
+                            .ForEach(n => SetProperty(n.Param, n.Value));
+                    }
+                }
+                else if (line.Param == "Match")
+                {
+                    // TODO
+                }
+                else
+                {
+                    SetProperty(line.Param, line.Value);
+                }
+            }
+
+            return results;
+        }
+
         /// <summary>
         /// Removes an entry by host.
         /// </summary>
         /// <param name="host"></param>
         public void RemoveByHost(string host)
         {
-            var result = FindByHost(host);
+            var result = FindNodeByHost(host);
 
             if (result != null)
             {
                 this.Remove(result);
             }
         }
-        
+
 
         /// <summary>
         /// Removes an entry by match
@@ -38,7 +90,7 @@ namespace SshConfigParser
         /// <param name="match"></param>
         public void RemoveByMatch(string match)
         {
-            var result = FindByMatch(match);
+            var result = FindNodeByMatch(match);
 
             if (result != null)
             {
@@ -46,7 +98,7 @@ namespace SshConfigParser
             }
         }
 
-        
+
         /// <summary>
         /// Append new section to existing ssh config
         /// </summary>
@@ -110,9 +162,9 @@ namespace SshConfigParser
         /// </summary>
         /// <param name="host"></param>
         /// <returns></returns>
-        public ConfigNode FindByHost(string host)
+        public ConfigNode FindNodeByHost(string host)
         {
-            return Find("Host", host);
+            return FindNode("Host", host);
         }
 
         /// <summary>
@@ -120,12 +172,12 @@ namespace SshConfigParser
         /// </summary>
         /// <param name="match"></param>
         /// <returns></returns>
-        public ConfigNode FindByMatch(string match)
+        public ConfigNode FindNodeByMatch(string match)
         {
-            return Find("Match", match);
+            return FindNode("Match", match);
         }
 
-        private ConfigNode Find(string findBy, string find)
+        private ConfigNode FindNode(string findBy, string find)
         {
             if (findBy != "Match" && findBy != "Host")
             {
@@ -187,7 +239,7 @@ namespace SshConfigParser
         {
             return Parse(File.ReadAllText(path));
         }
-        
+
         /// <summary>
         /// Parses the SSH config text.
         /// </summary>
