@@ -141,7 +141,7 @@ namespace SshConfigParser
                     Separator = " ",
                     Value = opts[key]?.ToString(),
                     Before = "",
-                    After = "\n"
+                    After = Environment.NewLine
                 };
 
                 if (RE_SECTION_DIRECTIVE.IsMatch(key.ToString()))
@@ -157,7 +157,7 @@ namespace SshConfigParser
                 }
             }
 
-            config._nodes[config._nodes.Count - 1].After += '\n';
+            config._nodes[config._nodes.Count - 1].After += Environment.NewLine;
         }
 
         /// <summary>
