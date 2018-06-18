@@ -14,17 +14,18 @@ namespace SshConfigParser
 {
     // Based on code from https://github.com/dotnil/ssh-config
 
-    public class SshConfig : List<ConfigNode>
+    public class SshConfig
     {
+        private List<ConfigNode> _nodes = new List<ConfigNode>();
         private static readonly Regex RE_SPACE = new Regex("\\s");
         private static readonly Regex RE_LINE_BREAK = new Regex("\\r|\\n");
         private static readonly Regex RE_SECTION_DIRECTIVE = new Regex("^(Host|Match)$", RegexOptions.IgnoreCase);
         private static readonly Regex RE_QUOTED = new Regex("^(\")(.*)\\1$");
 
-        public SshHost Find(string host)
+        public SshHost Compute(string host)
         {
             var result = new SshHost();
-            
+
             void SetProperty(string name, string value)
             {
                 if (!result.Properties.ContainsKey(name))
@@ -33,7 +34,7 @@ namespace SshConfigParser
                 }
             }
 
-            foreach (var line in this)
+            foreach (var line in _nodes)
             {
                 if (line.Type != NodeType.Directive)
                 {
@@ -46,7 +47,7 @@ namespace SshConfigParser
                     {
                         SetProperty(line.Param, line.Value);
 
-                        line.Config
+                        line.Config._nodes
                             .Where(n => n.Type == NodeType.Directive)
                             .ForEach(n => SetProperty(n.Param, n.Value));
                     }
@@ -74,7 +75,7 @@ namespace SshConfigParser
 
             if (result != null)
             {
-                this.Remove(result);
+                _nodes.Remove(result);
             }
         }
 
@@ -89,7 +90,7 @@ namespace SshConfigParser
 
             if (result != null)
             {
-                this.Remove(result);
+                _nodes.Remove(result);
             }
         }
 
@@ -98,12 +99,12 @@ namespace SshConfigParser
         {
             Add(host.Properties);
         }
-        
+
         /// <summary>
         /// Append new section to existing ssh config
         /// </summary>
         /// <param name="opts"></param>
-        public SshConfig Add(IDictionary opts)
+        public void Add(IDictionary opts)
         {
             // We use IDictionary so we can support Hashtables from powershell
             // or a Dictionary<string, string>
@@ -112,11 +113,11 @@ namespace SshConfigParser
             var configWas = this;
             var indent = "  ";
 
-            foreach (var line in this)
+            foreach (var line in _nodes)
             {
                 if (RE_SECTION_DIRECTIVE.IsMatch(line.Param))
                 {
-                    foreach (var subline in line.Config)
+                    foreach (var subline in line.Config._nodes)
                     {
                         if (!string.IsNullOrEmpty(subline.Before))
                         {
@@ -126,8 +127,12 @@ namespace SshConfigParser
                     }
                 }
             }
+            
+            // Make sure host/match are first.
+            var keys = opts.Keys.OfType<string>()
+                .OrderByDescending(key => RE_SECTION_DIRECTIVE.IsMatch(key.ToString()));
 
-            foreach (var key in opts.Keys)
+            foreach (var key in keys)
             {
                 var line = new ConfigNode
                 {
@@ -142,19 +147,17 @@ namespace SshConfigParser
                 if (RE_SECTION_DIRECTIVE.IsMatch(key.ToString()))
                 {
                     config = configWas;
-                    config.Add(line);
+                    config._nodes.Add(line);
                     config = line.Config = new SshConfig();
                 }
                 else
                 {
                     line.Before = indent;
-                    config.Add(line);
+                    config._nodes.Add(line);
                 }
             }
 
-            config[config.Count - 1].After += '\n';
-
-            return configWas;
+            config._nodes[config._nodes.Count - 1].After += '\n';
         }
 
         /// <summary>
@@ -184,7 +187,7 @@ namespace SshConfigParser
                 throw new Exception("Can only find by Host or Match");
             }
 
-            var query = from line in this
+            var query = from line in this._nodes
                 where line.Type == NodeType.Directive
                       && RE_SECTION_DIRECTIVE.IsMatch(line.Param)
                       && line.Param == findBy
@@ -222,10 +225,10 @@ namespace SshConfigParser
 
                 output.Append(line.After);
 
-                line.Config?.ForEach(Format);
+                line.Config?._nodes.ForEach(Format);
             }
 
-            ForEach(Format);
+            _nodes.ForEach(Format);
 
             return output.ToString();
         }
@@ -376,16 +379,27 @@ namespace SshConfigParser
                 if (node.Type == NodeType.Directive && RE_SECTION_DIRECTIVE.IsMatch(node.Param))
                 {
                     config = configWas;
-                    config.Add(node);
+                    config._nodes.Add(node);
                     config = node.Config = new SshConfig();
                 }
                 else
                 {
-                    config.Add(node);
+                    config._nodes.Add(node);
                 }
             }
 
             return configWas;
         }
+
+        public void Add(ConfigNode node)
+        {
+            _nodes.Add(node);
+        }
+
+        public int Count => _nodes.Count;
+
+        public ConfigNode this[int index] => _nodes[index];
+
+        public IEnumerable<ConfigNode> AsEnumerable() => _nodes;
     }
 }

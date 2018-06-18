@@ -1,6 +1,8 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Xunit;
 
@@ -366,6 +368,33 @@ namespace SshConfigParser.Tests
             host.Config[1].Value.ShouldEqual("jeremy");
             host.Config[2].Param.ShouldEqual("Port");
             host.Config[2].Value.ShouldEqual("123");
+        }
+        
+        [Fact]
+        public void Adds_host_with_alias_using_hash()
+        {
+            var d = new Hashtable
+            {
+                { "Host", "test1" },
+                { "HostName", "jeremyskinner.co.uk" },
+                { "User", "jeremy" },
+                { "Port", "123" }
+            };
+
+            var cfg = SshConfig.ParseFile("config");
+            cfg.Add(d);
+
+            var host = cfg.FindNodeByHost("test1");
+            host.ShouldNotBeNull();
+            host.Value.ShouldEqual("test1");
+            host.Param.ShouldEqual("Host");
+            
+            //Can't rely on index - hashtable not ordered
+
+            host.Config.Count.ShouldEqual(3);
+            host.Config.AsEnumerable().Single(x => x.Param == "HostName").Value.ShouldEqual("jeremyskinner.co.uk");
+            host.Config.AsEnumerable().Single(x => x.Param == "User").Value.ShouldEqual("jeremy");
+            host.Config.AsEnumerable().Single(x => x.Param == "Port").Value.ShouldEqual("123");
         }
     }
 
