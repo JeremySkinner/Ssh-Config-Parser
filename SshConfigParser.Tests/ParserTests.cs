@@ -156,11 +156,11 @@ namespace SshConfigParser.Tests
         public void Gets_result_by_host_with_globbing()
         {
             var config = SshConfig.ParseFile("config");
-            var opts = config.Find("tahoe2");
-          
+            var opts = config.Compute("tahoe2");
+
             opts["User"].ShouldEqual("nil");
             opts.User.ShouldEqual("nil");
-          
+
             opts.IdentityFile.ShouldEqual("~/.ssh/id_rsa");
 //            ((List<object>) opts["IdentityFile"])[0].ShouldEqual("~/.ssh/id_rsa");
 
@@ -169,7 +169,7 @@ namespace SshConfigParser.Tests
             opts["ServerAliveInterval"].ShouldEqual("80");
 
             // the computed result is flat on purpose.
-            opts = config.Find("tahoe1");
+            opts = config.Compute("tahoe1");
             opts["Compression"].ShouldEqual("yes");
             opts["ControlMaster"].ShouldEqual("auto");
             opts["ControlPath"].ShouldEqual("~/.ssh/master-%r@%h:%p");
@@ -192,7 +192,7 @@ namespace SshConfigParser.Tests
         public void Gets_by_host_with_globbing()
         {
             var config = SshConfig.ParseFile("config02");
-            var result = config.Find("example1");
+            var result = config.Compute("example1");
             result["Host"].ShouldEqual("example1");
             result["HostName"].ShouldEqual("example1.com");
             result["User"].ShouldEqual("simon");
@@ -283,7 +283,7 @@ namespace SshConfigParser.Tests
                 {"IdentityFile", "~/.ssh/id_rsa"}
             });
 
-            var opts = cfg.Find("example2.com");
+            var opts = cfg.Compute("example2.com");
 
             opts["User"].ShouldEqual("pegg");
             opts["IdentityFile"].ShouldEqual("~/.ssh/id_rsa");
@@ -343,14 +343,30 @@ namespace SshConfigParser.Tests
         }
 
         [Fact]
-        public void Adds_host_with_alias()
+        public void Adds_host_with_alias_using_dictionary()
         {
-            // If a host and hostname are both specified, treat the host as the alias
-            // and indent everything else. 
-            
-            //todo
-            Assert.True(false);
+            var d = new Dictionary<string, string>
+            {
+                { "Host", "test1" },
+                { "HostName", "jeremyskinner.co.uk" },
+                { "User", "jeremy" },
+                { "Port", "123" }
+            };
+
+            var cfg = SshConfig.ParseFile("config");
+            cfg.Add(d);
+
+            var host = cfg.FindNodeByHost("test1");
+            host.ShouldNotBeNull();
+            host.Value.ShouldEqual("test1");
+            host.Param.ShouldEqual("Host");
+            host.Config[0].Param.ShouldEqual("HostName");
+            host.Config[0].Value.ShouldEqual("jeremyskinner.co.uk");
+            host.Config[1].Param.ShouldEqual("User");
+            host.Config[1].Value.ShouldEqual("jeremy");
+            host.Config[2].Param.ShouldEqual("Port");
+            host.Config[2].Value.ShouldEqual("123");
         }
     }
-    
+
 }
